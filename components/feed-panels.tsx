@@ -9,6 +9,8 @@ import {
   CircleHelp,
   Focus,
   MessageSquareText,
+  Pause,
+  Play,
   Radio,
   ShieldAlert,
 } from "lucide-react";
@@ -24,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { usePreviewMotion } from "@/hooks/use-preview-motion";
 import {
   activityEvents,
   chatMessages,
@@ -171,6 +174,13 @@ export function ChatPanel({ full = false }: { full?: boolean }) {
         ),
     [state.filters.attention, state.filters.platform, state.queue],
   );
+  const motion = usePreviewMotion({
+    itemCount: messages.length,
+    intervalMs: 3000,
+    initialIndex: Math.min(4, Math.max(0, messages.length - 1)),
+  });
+  const liveMessage = messages[motion.index];
+  const motionState = motion.reducedMotion ? "reduced" : motion.paused ? "paused" : "playing";
 
   return (
     <section className={`workspace-panel chat-panel ${full ? "full-panel" : ""}`} aria-labelledby="chat-panel-title">
@@ -182,6 +192,26 @@ export function ChatPanel({ full = false }: { full?: boolean }) {
         <span className="panel-count">{messages.length}</span>
       </header>
       <div className="panel-filters"><FilterSelects kind="chat" /></div>
+      {liveMessage ? (
+        <div className="live-preview-strip" data-motion={motionState} aria-label="Moving simulated livestream preview" aria-live="off">
+          <span className="live-preview-label"><i aria-hidden="true" /> Simulated flow</span>
+          <PlatformMark platform={liveMessage.platform} compact />
+          <span className="live-preview-copy" key={`${liveMessage.id}-${motion.index}`}>
+            <strong>{liveMessage.author}</strong>
+            <span>{liveMessage.text}</span>
+          </span>
+          <Button
+            className="live-preview-toggle"
+            variant="ghost"
+            size="icon-sm"
+            onClick={motion.togglePaused}
+            disabled={motion.reducedMotion || messages.length < 2}
+            aria-label={motion.paused ? "Resume simulated Chat movement" : "Pause simulated Chat movement"}
+          >
+            {motion.paused ? <Play aria-hidden="true" /> : <Pause aria-hidden="true" />}
+          </Button>
+        </div>
+      ) : null}
       <div className="message-list" aria-live="polite">
         {messages.length === 0 ? (
           <div className="small-empty-state"><MessageSquareText aria-hidden="true" /><strong>No messages match</strong><p>Clear or change a filter to return to the conversation.</p></div>
@@ -198,6 +228,7 @@ export function ChatPanel({ full = false }: { full?: boolean }) {
                 data-focused={focused}
                 data-attention={messageNeedsAttention(message)}
                 data-queued={queued}
+                data-preview-active={liveMessage?.id === message.id}
               >
                 <div className="message-avatar" data-platform={message.platform}>{message.initials}</div>
                 <div className="message-body">
@@ -327,4 +358,3 @@ function LinkToFullActivity() {
     </Button>
   );
 }
-

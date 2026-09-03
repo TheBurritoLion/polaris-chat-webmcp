@@ -44,6 +44,26 @@ test("ships responsive, focus-visible, overflow, and reduced-motion safeguards",
   assert.match(css, /data-focused="true"/);
 });
 
+test("animates deterministic synthetic activity on the homepage and workspace", async () => {
+  const [homePreview, feedPanels, motionHook, css] = await Promise.all([
+    readFile(`${root}/components/home-live-preview.tsx`, "utf8"),
+    readFile(`${root}/components/feed-panels.tsx`, "utf8"),
+    readFile(`${root}/hooks/use-preview-motion.ts`, "utf8"),
+    readFile(`${root}/app/globals.css`, "utf8"),
+  ]);
+
+  assert.match(homePreview, /Preview moving/);
+  assert.match(homePreview, /Pause homepage preview motion/);
+  assert.match(feedPanels, /Moving simulated livestream preview/);
+  assert.match(feedPanels, /data-preview-active/);
+  assert.match(motionHook, /window\.setInterval/);
+  assert.match(motionHook, /document\.hidden/);
+  assert.match(motionHook, /prefers-reduced-motion: reduce/);
+  assert.doesNotMatch([homePreview, motionHook].join("\n"), /Math\.random|Date\.now/);
+  assert.match(css, /@keyframes mini-message-arrive/);
+  assert.match(css, /@keyframes preview-copy-arrive/);
+});
+
 test("does not render viewer content through an HTML injection escape hatch", async () => {
   const files = await Promise.all([
     readFile(`${root}/components/feed-panels.tsx`, "utf8"),

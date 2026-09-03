@@ -3,17 +3,14 @@ import {
   ArrowRight,
   Eye,
   Focus,
-  MessageSquareText,
   RadioTower,
   Sparkles,
 } from "lucide-react";
 import { BrandMark, PlatformMark } from "@/components/polaris-brand";
-import { activityEvents, chatMessages, platformKeys } from "@/lib/polaris-demo";
+import { HomeLivePreview } from "@/components/home-live-preview";
+import { platformKeys } from "@/lib/polaris-demo";
 
 export default function HomePage() {
-  const previewMessages = [...chatMessages].sort((a, b) => b.order - a.order).slice(0, 4);
-  const audioWarning = activityEvents.find((event) => event.id === "activity-audio-cluster")!;
-
   return (
     <main className="public-shell">
       <header className="public-header">
@@ -51,37 +48,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="hero-product-frame" aria-label="Preview of the Polaris Chat creator workspace">
-          <div className="mini-app-bar">
-            <div><BrandMark size={25} /><strong>Producer Rush</strong></div>
-            <span><i aria-hidden="true" /> Simulated live</span>
-          </div>
-          <div className="mini-workspace">
-            <section aria-labelledby="mini-chat-title">
-              <div className="mini-panel-heading"><span id="mini-chat-title"><MessageSquareText size={14} /> Chat</span><small>14 messages</small></div>
-              <div className="mini-message-list">
-                {previewMessages.map((message) => (
-                  <article key={message.id}>
-                    <PlatformMark platform={message.platform} compact />
-                    <p><strong>{message.author}</strong><span>{message.text}</span></p>
-                  </article>
-                ))}
-              </div>
-            </section>
-            <aside aria-labelledby="mini-queue-title">
-              <div className="mini-panel-heading"><span id="mini-queue-title"><Focus size={14} /> Producer Queue</span><small>Shared</small></div>
-              <article className="mini-attention-card">
-                <em>Urgent</em>
-                <strong>{audioWarning.title}</strong>
-                <p>{audioWarning.detail}</p>
-                <span>Ready for creator review</span>
-              </article>
-              <article className="mini-queue-card">
-                <em>High</em><strong>Viewer setup question</strong><span>Twitch · New</span>
-              </article>
-            </aside>
-          </div>
-        </div>
+        <HomeLivePreview />
       </section>
 
       <section className="platform-ribbon" aria-label="Preview platforms">
@@ -135,4 +102,3 @@ export default function HomePage() {
     </main>
   );
 }
-

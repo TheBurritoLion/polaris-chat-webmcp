@@ -10,7 +10,7 @@ The challenge edition does not connect to creator accounts or provider APIs. Eve
 
 Polaris Chat existed as a private product concept and development project before the OpenAI WebMCP Challenge. Its pre-existing foundations include the **Polaris Chat** name, **Every community. One North Star.** tagline, luminous North Star identity, premium dark navy creator-workspace direction, five-platform product vision, and the core Chat, Activity, Platform Hub, and Settings navigation concepts.
 
-This public repository contains the separately authored challenge edition. Challenge-specific work includes the deterministic **Producer Rush** scenario, synthetic five-platform fixtures, the shared **Producer Queue**, all eight browser-registered WebMCP tools, local persistence and Reset Demo, the public-preview disclosure and landing experience, and the explicit untrusted-content and human-control boundaries.
+This public repository contains the separately authored challenge edition. Challenge-specific work includes the deterministic **Producer Rush** scenario, synthetic five-platform fixtures, a pauseable motion preview, the shared **Producer Queue**, all eight browser-registered WebMCP tools, local persistence and Reset Demo, the public-preview disclosure and landing experience, and the explicit untrusted-content and human-control boundaries.
 
 The private production repository, its Git history, runtime configuration, credentials, provider implementations, and real data are not included here. This repository is an isolated public challenge implementation, not a publication or fork of the private production codebase.
 
@@ -109,6 +109,7 @@ The handled item remains visible as evidence that the human and agent share pers
 - Tool inputs use narrow JSON Schemas, strict enums, bounded strings, and `additionalProperties: false`.
 - Queue mutations accept only stable source IDs already present in the deterministic fixture set.
 - State is stored only in browser `localStorage` and can be reset from the interface.
+- Preview movement uses a deterministic local timer, pauses while the tab is hidden or when the viewer pauses it, and honors the operating system's reduced-motion preference.
 - No real Polaris provider implementation, credential, payload, private user data, or production runtime is included.
 
 WebMCP implementation follows the current [OpenAI Site tools documentation](https://learn.chatgpt.com/docs/webmcp).
