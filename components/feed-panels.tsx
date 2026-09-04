@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   Activity,
@@ -27,10 +27,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { usePreviewMotion } from "@/hooks/use-preview-motion";
 import {
   activityEvents,
-  chatMessages,
   platformKeys,
   platformMeta,
   previewMetrics,
@@ -168,24 +166,44 @@ function FilterSelects({ kind }: { kind: "chat" | "activity" }) {
 }
 
 export function ChatPanel({ full = false }: { full?: boolean }) {
-  const { state } = useDemoWorkspace();
+  const {
+    state,
+    chatFlow,
+    getVisibleChatMessages,
+    startChatFlow,
+    toggleChatFlow,
+  } = useDemoWorkspace();
+  const receivedChatMessages = getVisibleChatMessages();
+
+  useEffect(() => {
+    startChatFlow();
+  }, [startChatFlow]);
+
   const messages = useMemo(
     () =>
-      [...chatMessages]
+      [...receivedChatMessages]
         .sort((a, b) => b.order - a.order)
         .filter((message) => state.filters.platform === "all" || message.platform === state.filters.platform)
         .filter((message) =>
           attentionMatches(message.id, messageNeedsAttention(message), state.filters.attention, state.queue),
         ),
-    [state.filters.attention, state.filters.platform, state.queue],
+    [receivedChatMessages, state.filters.attention, state.filters.platform, state.queue],
   );
-  const motion = usePreviewMotion({
-    itemCount: messages.length,
-    intervalMs: 2400,
-    initialIndex: Math.min(4, Math.max(0, messages.length - 1)),
-  });
-  const liveMessage = messages[motion.index];
-  const motionState = motion.reducedMotion ? "reduced" : motion.paused ? "paused" : "playing";
+  const liveMessage = messages.find((message) => message.id === chatFlow.currentMessageId);
+  const flowingMessages = useMemo(
+    () =>
+      !liveMessage || chatFlow.reducedMotion
+        ? messages
+        : [liveMessage, ...messages.filter((message) => message.id !== liveMessage.id)],
+    [chatFlow.reducedMotion, liveMessage, messages],
+  );
+  const motionState = chatFlow.reducedMotion
+    ? "reduced"
+    : chatFlow.paused
+      ? "paused"
+      : chatFlow.visibleCount === 0
+        ? "starting"
+        : "playing";
 
   return (
     <section className={`workspace-panel chat-panel ${full ? "full-panel" : ""}`} aria-labelledby="chat-panel-title">
@@ -194,34 +212,41 @@ export function ChatPanel({ full = false }: { full?: boolean }) {
           <p className="panel-kicker"><Radio aria-hidden="true" /> Live conversation</p>
           <h1 id="chat-panel-title">Chat</h1>
         </div>
-        <span className="panel-count">{messages.length}</span>
+        <span className="panel-count" title={`${messages.length} messages currently visible`}>{messages.length}</span>
       </header>
       <div className="panel-filters"><FilterSelects kind="chat" /></div>
-      {liveMessage ? (
+      {chatFlow.totalCount > 0 ? (
         <div className="live-preview-strip" data-motion={motionState} aria-label="Moving simulated livestream preview" aria-live="off">
           <span className="live-preview-label"><i aria-hidden="true" /> {previewMetrics.messagesPerMinute}/min simulated</span>
-          <PlatformMark platform={liveMessage.platform} compact />
-          <span className="live-preview-copy" key={`${liveMessage.id}-${motion.index}`}>
-            <strong>{liveMessage.author}</strong>
-            <span>{liveMessage.text}</span>
-          </span>
+          {liveMessage ? <PlatformMark platform={liveMessage.platform} compact /> : <span className="live-preview-platform-placeholder" aria-hidden="true" />}
+          {liveMessage ? (
+            <span className="live-preview-copy" key={`${liveMessage.id}-${chatFlow.visibleCount}`}>
+              <strong>{liveMessage.author}</strong>
+              <span>{liveMessage.text}</span>
+            </span>
+          ) : (
+            <span className="live-preview-copy live-preview-waiting">
+              <strong>{chatFlow.paused ? "Feed paused" : chatFlow.reducedMotion ? "Static fixture" : "Starting Chat…"}</strong>
+              <span>{chatFlow.reducedMotion ? "Full deterministic feed shown below." : "The first simulated message is on its way."}</span>
+            </span>
+          )}
           <Button
             className="live-preview-toggle"
             variant="ghost"
             size="icon-sm"
-            onClick={motion.togglePaused}
-            disabled={motion.reducedMotion || messages.length < 2}
-            aria-label={motion.paused ? "Resume simulated Chat movement" : "Pause simulated Chat movement"}
+            onClick={toggleChatFlow}
+            disabled={chatFlow.reducedMotion || chatFlow.totalCount < 2}
+            aria-label={chatFlow.paused ? "Resume simulated Chat movement" : "Pause simulated Chat movement"}
           >
-            {motion.paused ? <Play aria-hidden="true" /> : <Pause aria-hidden="true" />}
+            {chatFlow.paused ? <Play aria-hidden="true" /> : <Pause aria-hidden="true" />}
           </Button>
         </div>
       ) : null}
-      <div className="message-list" aria-live="polite">
-        {messages.length === 0 ? (
+      <div className="message-list" aria-live="off">
+        {chatFlow.visibleCount === 0 && !chatFlow.reducedMotion ? null : messages.length === 0 ? (
           <div className="small-empty-state"><MessageSquareText aria-hidden="true" /><strong>No messages match</strong><p>Clear or change a filter to return to the conversation.</p></div>
         ) : (
-          messages.map((message) => {
+          flowingMessages.map((message) => {
             const queued = state.queue.some((item) => item.sourceId === message.id);
             const focused = state.focusedItem?.kind === "chat" && state.focusedItem.id === message.id;
             return (

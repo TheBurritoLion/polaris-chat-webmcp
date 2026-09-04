@@ -64,7 +64,7 @@ The application progressively registers eight imperative tools from the top-leve
 | Tool | Effect |
 | --- | --- |
 | `get_live_workspace_snapshot` | Read the current scenario, filters, counts, focus, queue totals, and simulated connection state. |
-| `list_recent_chat_messages` | Read bounded synthetic Chat rows. Viewer text is explicitly untrusted content. |
+| `list_recent_chat_messages` | Read bounded synthetic Chat rows that have visibly arrived. Viewer text is explicitly untrusted content. |
 | `list_recent_community_events` | Read bounded synthetic Community and System Activity. |
 | `get_producer_queue` | Read the same queue visible to the creator. |
 | `add_producer_queue_item` | Add an existing Chat or Activity source to the visible local queue. |
@@ -77,7 +77,7 @@ Polaris remains fully usable when WebMCP is unavailable.
 ## Using WebMCP
 
 1. Open the deployed Site in a ChatGPT browser that supports Site tools.
-2. Launch **Interactive Preview** and keep the Polaris workspace open.
+2. Launch **Interactive Preview**. Chat starts at zero and deterministic messages visibly enter the main feed.
 3. Ask ChatGPT to inspect recent Chat and Activity or use the challenge prompt below.
 4. Review every resulting queue mutation in the visible **Producer Queue**.
 5. Mark, dismiss, reopen, or reprioritize items yourself; the agent reads the same shared local state on the next turn.
@@ -115,7 +115,8 @@ The grounded answer is **yes: the Bobcat Blueprint**. Four synthetic viewers acr
 - Tool inputs use narrow JSON Schemas, strict enums, bounded strings, and `additionalProperties: false`.
 - Queue mutations accept only stable source IDs already present in the deterministic fixture set.
 - State is stored only in browser `localStorage` and can be reset from the interface.
-- Preview movement uses a deterministic local timer, pauses while the tab is hidden or when the viewer pauses it, and honors the operating system's reduced-motion preference.
+- Interactive Chat starts blank, receives deterministic messages at the displayed cadence, and restarts from blank with Reset Demo. The WebMCP read tool sees only messages that have visibly arrived.
+- Preview movement uses deterministic local timers, pauses while the tab is hidden or when the viewer pauses it, and honors the operating system's reduced-motion preference.
 - No real Polaris provider implementation, credential, payload, private user data, or production runtime is included.
 
 WebMCP implementation follows the current [OpenAI Site tools documentation](https://learn.chatgpt.com/docs/webmcp).

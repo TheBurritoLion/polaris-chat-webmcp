@@ -22,6 +22,7 @@ import {
   platformMeta,
   storageKey,
   type AttentionFilter,
+  type ChatMessage,
   type DemoWorkspaceState,
   type FocusedItem,
   type Priority,
@@ -39,7 +40,18 @@ type FilterPatch = Partial<WorkspaceFilters>;
 interface DemoWorkspaceContextValue {
   state: DemoWorkspaceState;
   hydrated: boolean;
+  chatFlow: {
+    running: boolean;
+    paused: boolean;
+    reducedMotion: boolean;
+    visibleCount: number;
+    totalCount: number;
+    currentMessageId: string | null;
+  };
   getState: () => DemoWorkspaceState;
+  getVisibleChatMessages: () => ChatMessage[];
+  startChatFlow: () => void;
+  toggleChatFlow: () => void;
   addQueueItem: (
     sourceId: string,
     priority: Priority,
@@ -57,6 +69,10 @@ interface DemoWorkspaceContextValue {
 }
 
 const DemoWorkspaceContext = createContext<DemoWorkspaceContextValue | null>(null);
+
+const chronologicalChatMessages = [...chatMessages].sort((a, b) => a.order - b.order);
+const chatFlowIntervalMs = 1850;
+const chatFlowStartDelayMs = 650;
 
 function cloneDefaultState(): DemoWorkspaceState {
   return {
@@ -125,7 +141,14 @@ function boundedReason(reason: string) {
 export function DemoWorkspaceProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<DemoWorkspaceState>(cloneDefaultState);
   const [hydrated, setHydrated] = useState(false);
+  const [chatFlowStep, setChatFlowStep] = useState(0);
+  const [chatFlowRunning, setChatFlowRunning] = useState(false);
+  const [chatFlowPaused, setChatFlowPaused] = useState(false);
+  const [chatFlowReducedMotion, setChatFlowReducedMotion] = useState(false);
+  const [chatFlowEpoch, setChatFlowEpoch] = useState(0);
   const stateRef = useRef(state);
+  const chatFlowStepRef = useRef(0);
+  const chatFlowReducedMotionRef = useRef(false);
 
   const commit = useCallback((next: DemoWorkspaceState) => {
     stateRef.current = next;
@@ -150,7 +173,50 @@ export function DemoWorkspaceProvider({ children }: { children: React.ReactNode 
     window.localStorage.setItem(storageKey, JSON.stringify(persisted));
   }, [hydrated, state]);
 
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updatePreference = () => {
+      chatFlowReducedMotionRef.current = media.matches;
+      setChatFlowReducedMotion(media.matches);
+    };
+    updatePreference();
+    media.addEventListener("change", updatePreference);
+    return () => media.removeEventListener("change", updatePreference);
+  }, []);
+
+  const advanceChatFlow = useCallback(() => {
+    if (document.hidden) return;
+    setChatFlowStep((current) => {
+      const next = current + 1;
+      chatFlowStepRef.current = next;
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!chatFlowRunning || chatFlowPaused || chatFlowReducedMotion || chronologicalChatMessages.length === 0) return;
+
+    let interval: number | undefined;
+    const starter = window.setTimeout(() => {
+      advanceChatFlow();
+      interval = window.setInterval(advanceChatFlow, chatFlowIntervalMs);
+    }, chatFlowStartDelayMs);
+
+    return () => {
+      window.clearTimeout(starter);
+      if (interval !== undefined) window.clearInterval(interval);
+    };
+  }, [advanceChatFlow, chatFlowEpoch, chatFlowPaused, chatFlowReducedMotion, chatFlowRunning]);
+
   const getState = useCallback(() => stateRef.current, []);
+  const getVisibleChatMessages = useCallback(() => {
+    const visibleCount = chatFlowReducedMotionRef.current
+      ? chronologicalChatMessages.length
+      : Math.min(chatFlowStepRef.current, chronologicalChatMessages.length);
+    return chronologicalChatMessages.slice(0, visibleCount);
+  }, []);
+  const startChatFlow = useCallback(() => setChatFlowRunning(true), []);
+  const toggleChatFlow = useCallback(() => setChatFlowPaused((current) => !current), []);
 
   const addQueueItem = useCallback<DemoWorkspaceContextValue["addQueueItem"]>(
     (sourceId, priority, reason, createdBy) => {
@@ -270,22 +336,60 @@ export function DemoWorkspaceProvider({ children }: { children: React.ReactNode 
 
   const resetDemo = useCallback(() => {
     window.localStorage.removeItem(storageKey);
+    chatFlowStepRef.current = 0;
+    setChatFlowStep(0);
+    setChatFlowPaused(false);
+    setChatFlowEpoch((current) => current + 1);
     commit({ ...cloneDefaultState(), revision: stateRef.current.revision + 1 });
-    toast.success("Producer Rush reset", { description: "Queue, filters, and focus returned to the starting state." });
+    toast.success("Producer Rush reset", { description: "The workspace is clear and simulated Chat is restarting." });
   }, [commit]);
+
+  const visibleChatMessages = useMemo(
+    () =>
+      chronologicalChatMessages.slice(
+        0,
+        chatFlowReducedMotion
+          ? chronologicalChatMessages.length
+          : Math.min(chatFlowStep, chronologicalChatMessages.length),
+      ),
+    [chatFlowReducedMotion, chatFlowStep],
+  );
+  const currentMessageId =
+    chronologicalChatMessages.length > 0 && (chatFlowStep > 0 || chatFlowReducedMotion)
+      ? chronologicalChatMessages[
+          chatFlowReducedMotion
+            ? chronologicalChatMessages.length - 1
+            : (chatFlowStep - 1) % chronologicalChatMessages.length
+        ].id
+      : null;
+  const chatFlow = useMemo(
+    () => ({
+      running: chatFlowRunning,
+      paused: chatFlowPaused,
+      reducedMotion: chatFlowReducedMotion,
+      visibleCount: visibleChatMessages.length,
+      totalCount: chronologicalChatMessages.length,
+      currentMessageId,
+    }),
+    [chatFlowPaused, chatFlowReducedMotion, chatFlowRunning, currentMessageId, visibleChatMessages.length],
+  );
 
   const value = useMemo<DemoWorkspaceContextValue>(
     () => ({
       state,
       hydrated,
+      chatFlow,
       getState,
+      getVisibleChatMessages,
+      startChatFlow,
+      toggleChatFlow,
       addQueueItem,
       updateQueueItem,
       setFocusedItem,
       setFilters,
       resetDemo,
     }),
-    [state, hydrated, getState, addQueueItem, updateQueueItem, setFocusedItem, setFilters, resetDemo],
+    [state, hydrated, chatFlow, getState, getVisibleChatMessages, startChatFlow, toggleChatFlow, addQueueItem, updateQueueItem, setFocusedItem, setFilters, resetDemo],
   );
 
   return <DemoWorkspaceContext.Provider value={value}>{children}</DemoWorkspaceContext.Provider>;

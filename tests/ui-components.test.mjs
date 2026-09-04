@@ -52,9 +52,11 @@ test("ships responsive, focus-visible, overflow, and reduced-motion safeguards",
 });
 
 test("animates deterministic synthetic activity on the homepage and workspace", async () => {
-  const [homePreview, feedPanels, motionHook, css] = await Promise.all([
+  const [homePreview, feedPanels, workspaceProvider, workspaceShell, motionHook, css] = await Promise.all([
     readFile(`${root}/components/home-live-preview.tsx`, "utf8"),
     readFile(`${root}/components/feed-panels.tsx`, "utf8"),
+    readFile(`${root}/components/demo-workspace-provider.tsx`, "utf8"),
+    readFile(`${root}/components/workspace-shell.tsx`, "utf8"),
     readFile(`${root}/hooks/use-preview-motion.ts`, "utf8"),
     readFile(`${root}/app/globals.css`, "utf8"),
   ]);
@@ -64,8 +66,16 @@ test("animates deterministic synthetic activity on the homepage and workspace", 
   assert.match(homePreview, /intervalMs: 1850/);
   assert.match(homePreview, /length: 5/);
   assert.match(feedPanels, /Moving simulated livestream preview/);
-  assert.match(feedPanels, /intervalMs: 2400/);
+  assert.match(feedPanels, /startChatFlow/);
+  assert.match(feedPanels, /getVisibleChatMessages/);
+  assert.match(feedPanels, /flowingMessages\.map/);
+  assert.match(feedPanels, /\[liveMessage, \.\.\.messages\.filter/);
   assert.match(feedPanels, /data-preview-active/);
+  assert.match(workspaceProvider, /chatFlowStartDelayMs = 650/);
+  assert.match(workspaceProvider, /chatFlowIntervalMs = 1850/);
+  assert.match(workspaceProvider, /setChatFlowStep\(0\)/);
+  assert.match(workspaceProvider, /getVisibleChatMessages/);
+  assert.match(workspaceShell, />Reset Demo</);
   assert.match(motionHook, /window\.setInterval/);
   assert.match(motionHook, /document\.hidden/);
   assert.match(motionHook, /prefers-reduced-motion: reduce/);
@@ -121,5 +131,6 @@ test("keeps provider controls inert and Reset Demo deterministic", async () => {
   assert.match(pages, /variant="ghost" disabled/);
   assert.match(provider, /localStorage\.removeItem\(storageKey\)/);
   assert.match(provider, /cloneDefaultState\(\)/);
+  assert.match(provider, /setChatFlowStep\(0\)/);
   assert.doesNotMatch([pages, provider, bridge].join("\n"), /\bfetch\s*\(|XMLHttpRequest|WebSocket|window\.open/);
 });

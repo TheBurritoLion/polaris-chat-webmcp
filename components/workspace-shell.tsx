@@ -56,21 +56,26 @@ function ResetDemoButton({ compact = false }: { compact?: boolean }) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button className={compact ? "reset-button compact" : "reset-button"} variant="ghost" size={compact ? "icon-sm" : "sm"}>
+        <Button
+          className={compact ? "reset-button compact" : "reset-button"}
+          variant="ghost"
+          size={compact ? "icon-sm" : "sm"}
+          aria-label="Reset Demo"
+        >
           <RotateCcw aria-hidden="true" />
-          {!compact ? <span>Reset demo</span> : <span className="sr-only">Reset demo</span>}
+          {!compact ? <span>Reset Demo</span> : <span className="sr-only">Reset Demo</span>}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent className="polaris-dialog">
         <AlertDialogHeader>
           <AlertDialogTitle>Reset Producer Rush?</AlertDialogTitle>
           <AlertDialogDescription>
-            This clears the local Producer Queue, filters, and focused item. Synthetic preview messages and Activity remain unchanged.
+            This clears the local Producer Queue, filters, and focused item. Simulated Chat restarts from blank and replays the same deterministic messages.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Keep current state</AlertDialogCancel>
-          <AlertDialogAction onClick={resetDemo}>Reset preview</AlertDialogAction>
+          <AlertDialogAction onClick={resetDemo}>Reset Demo</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -163,7 +168,7 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
               <span className="live-scale-compact">{previewMetrics.messagesPerMinute}/min</span>
             </span>
             <span className="webmcp-ready"><Sparkles aria-hidden="true" /> Producer ready</span>
-            <ResetDemoButton compact />
+            <ResetDemoButton />
           </div>
         </header>
 
