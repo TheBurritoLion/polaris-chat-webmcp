@@ -25,6 +25,8 @@ test("registers the complete bounded WebMCP tool family", async () => {
   assert.match(source, /readOnlyHint:\s*true/);
   assert.match(source, /default:\s*25/);
   assert.match(source, /chat_messages_per_minute/);
+  assert.match(source, /getVisibleActivityEvents/);
+  assert.match(source, /activity_flow_state/);
 });
 
 test("keeps all five platforms and the prompt-injection fixture synthetic", async () => {
@@ -70,11 +72,22 @@ test("animates deterministic synthetic activity on the homepage and workspace", 
   assert.match(feedPanels, /getVisibleChatMessages/);
   assert.match(feedPanels, /flowingMessages\.map/);
   assert.match(feedPanels, /\[liveMessage, \.\.\.messages\.filter/);
+  assert.match(feedPanels, /startActivityFlow/);
+  assert.match(feedPanels, /getVisibleActivityEvents/);
+  assert.match(feedPanels, /flowingEvents\.map/);
+  assert.match(feedPanels, /activityEventsPerMinute/);
+  assert.match(feedPanels, /Back to all Chat/);
+  assert.match(feedPanels, /\/app\/chat\?linked=/);
+  assert.doesNotMatch(feedPanels, /setFilters\(\{ platform: "all", attention: "attention" \}\)/);
   assert.match(feedPanels, /data-preview-active/);
   assert.match(workspaceProvider, /chatFlowStartDelayMs = 650/);
   assert.match(workspaceProvider, /chatFlowIntervalMs = 1850/);
+  assert.match(workspaceProvider, /activityFlowStartDelayMs = 1100/);
+  assert.match(workspaceProvider, /activityFlowIntervalMs = 4300/);
   assert.match(workspaceProvider, /setChatFlowStep\(0\)/);
+  assert.match(workspaceProvider, /setActivityFlowStep\(0\)/);
   assert.match(workspaceProvider, /getVisibleChatMessages/);
+  assert.match(workspaceProvider, /getVisibleActivityEvents/);
   assert.match(workspaceShell, />Reset Demo</);
   assert.match(motionHook, /window\.setInterval/);
   assert.match(motionHook, /document\.hidden/);
@@ -82,6 +95,11 @@ test("animates deterministic synthetic activity on the homepage and workspace", 
   assert.doesNotMatch([homePreview, motionHook].join("\n"), /Math\.random|Date\.now/);
   assert.match(css, /@keyframes mini-message-arrive/);
   assert.match(css, /@keyframes preview-copy-arrive/);
+  assert.match(css, /@keyframes activity-card-arrive/);
+  const chatCopyMotion = css.match(/@keyframes preview-copy-arrive\s*\{([\s\S]*?)\n\}/)?.[1] ?? "";
+  const chatRowMotion = css.match(/@keyframes preview-row-arrive\s*\{([\s\S]*?)\n\}/)?.[1] ?? "";
+  assert.doesNotMatch(chatCopyMotion, /opacity/);
+  assert.doesNotMatch(chatRowMotion, /opacity|background-color/);
 });
 
 test("does not render viewer content through an HTML injection escape hatch", async () => {

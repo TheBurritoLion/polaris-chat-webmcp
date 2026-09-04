@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Activity,
   AlertTriangle,
+  ArrowLeft,
   Check,
   CircleHelp,
   Focus,
@@ -170,10 +171,21 @@ export function ChatPanel({ full = false }: { full?: boolean }) {
     state,
     chatFlow,
     getVisibleChatMessages,
+    setFocusedItem,
     startChatFlow,
     toggleChatFlow,
   } = useDemoWorkspace();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const receivedChatMessages = getVisibleChatMessages();
+  const linkedEventId = searchParams.get("linked");
+  const linkedEvent = useMemo(
+    () =>
+      activityEvents.find(
+        (event) => event.id === linkedEventId && Boolean(event.linkedSourceIds?.length),
+      ) ?? null,
+    [linkedEventId],
+  );
 
   useEffect(() => {
     startChatFlow();
@@ -183,11 +195,17 @@ export function ChatPanel({ full = false }: { full?: boolean }) {
     () =>
       [...receivedChatMessages]
         .sort((a, b) => b.order - a.order)
-        .filter((message) => state.filters.platform === "all" || message.platform === state.filters.platform)
         .filter((message) =>
-          attentionMatches(message.id, messageNeedsAttention(message), state.filters.attention, state.queue),
+          linkedEvent
+            ? linkedEvent.linkedSourceIds?.includes(message.id)
+            : state.filters.platform === "all" || message.platform === state.filters.platform,
+        )
+        .filter((message) =>
+          linkedEvent
+            ? true
+            : attentionMatches(message.id, messageNeedsAttention(message), state.filters.attention, state.queue),
         ),
-    [receivedChatMessages, state.filters.attention, state.filters.platform, state.queue],
+    [linkedEvent, receivedChatMessages, state.filters.attention, state.filters.platform, state.queue],
   );
   const liveMessage = messages.find((message) => message.id === chatFlow.currentMessageId);
   const flowingMessages = useMemo(
@@ -214,8 +232,30 @@ export function ChatPanel({ full = false }: { full?: boolean }) {
         </div>
         <span className="panel-count" title={`${messages.length} messages currently visible`}>{messages.length}</span>
       </header>
-      <div className="panel-filters"><FilterSelects kind="chat" /></div>
-      {chatFlow.totalCount > 0 ? (
+      {linkedEvent ? (
+        <div className="linked-context-banner" role="status">
+          <span className="linked-context-copy">
+            <MessageSquareText aria-hidden="true" />
+            <span>
+              <strong>{linkedEvent.linkedSourceIds?.length} linked viewer reports</strong>
+              <small>{linkedEvent.title}</small>
+            </span>
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setFocusedItem(null);
+              router.replace("/app/chat");
+            }}
+          >
+            <ArrowLeft aria-hidden="true" /> Back to all Chat
+          </Button>
+        </div>
+      ) : (
+        <div className="panel-filters"><FilterSelects kind="chat" /></div>
+      )}
+      {!linkedEvent && chatFlow.totalCount > 0 ? (
         <div className="live-preview-strip" data-motion={motionState} aria-label="Moving simulated livestream preview" aria-live="off">
           <span className="live-preview-label"><i aria-hidden="true" /> {previewMetrics.messagesPerMinute}/min simulated</span>
           {liveMessage ? <PlatformMark platform={liveMessage.platform} compact /> : <span className="live-preview-platform-placeholder" aria-hidden="true" />}
@@ -244,7 +284,11 @@ export function ChatPanel({ full = false }: { full?: boolean }) {
       ) : null}
       <div className="message-list" aria-live="off">
         {chatFlow.visibleCount === 0 && !chatFlow.reducedMotion ? null : messages.length === 0 ? (
-          <div className="small-empty-state"><MessageSquareText aria-hidden="true" /><strong>No messages match</strong><p>Clear or change a filter to return to the conversation.</p></div>
+          linkedEvent ? (
+            <div className="small-empty-state"><MessageSquareText aria-hidden="true" /><strong>Linked reports are still arriving</strong><p>The exact viewer reports will appear here as the deterministic feed reaches this moment.</p></div>
+          ) : (
+            <div className="small-empty-state"><MessageSquareText aria-hidden="true" /><strong>No messages match</strong><p>Clear or change a filter to return to the conversation.</p></div>
+          )
         ) : (
           flowingMessages.map((message) => {
             const queued = state.queue.some((item) => item.sourceId === message.id);
@@ -291,20 +335,49 @@ export function ChatPanel({ full = false }: { full?: boolean }) {
 }
 
 export function ActivityPanel({ compact = false }: { compact?: boolean }) {
-  const { state, setFilters, setFocusedItem } = useDemoWorkspace();
+  const {
+    state,
+    activityFlow,
+    getVisibleActivityEvents,
+    setFilters,
+    setFocusedItem,
+    startActivityFlow,
+    toggleActivityFlow,
+  } = useDemoWorkspace();
   const router = useRouter();
+  const receivedActivityEvents = getVisibleActivityEvents();
+
+  useEffect(() => {
+    startActivityFlow();
+  }, [startActivityFlow]);
+
   const events = useMemo(
     () =>
-      [...activityEvents]
+      [...receivedActivityEvents]
         .sort((a, b) => b.order - a.order)
         .filter((event) => state.filters.platform === "all" || event.platform === state.filters.platform)
         .filter((event) => state.filters.activityScope === "all" || event.lane === state.filters.activityScope)
         .filter((event) =>
           attentionMatches(event.id, eventNeedsAttention(event), state.filters.attention, state.queue),
-        )
-        .slice(0, compact ? 8 : undefined),
-    [compact, state.filters.activityScope, state.filters.attention, state.filters.platform, state.queue],
+        ),
+    [receivedActivityEvents, state.filters.activityScope, state.filters.attention, state.filters.platform, state.queue],
   );
+  const liveEvent = events.find((event) => event.id === activityFlow.currentEventId);
+  const flowingEvents = useMemo(
+    () =>
+      (!liveEvent || activityFlow.reducedMotion
+        ? events
+        : [liveEvent, ...events.filter((event) => event.id !== liveEvent.id)]
+      ).slice(0, compact ? 8 : undefined),
+    [activityFlow.reducedMotion, compact, events, liveEvent],
+  );
+  const motionState = activityFlow.reducedMotion
+    ? "reduced"
+    : activityFlow.paused
+      ? "paused"
+      : activityFlow.visibleCount === 0
+        ? "starting"
+        : "playing";
 
   return (
     <section className={`workspace-panel activity-panel ${compact ? "compact-panel" : "full-panel"}`} aria-labelledby={compact ? "adjacent-activity-title" : "activity-panel-title"}>
@@ -313,7 +386,7 @@ export function ActivityPanel({ compact = false }: { compact?: boolean }) {
           <p className="panel-kicker"><Activity aria-hidden="true" /> Community + system</p>
           <h1 id={compact ? "adjacent-activity-title" : "activity-panel-title"}>Activity</h1>
         </div>
-        <span className="panel-count">{events.length}</span>
+        <span className="panel-count">{flowingEvents.length}</span>
       </header>
       {!compact ? (
         <div className="activity-controls">
@@ -330,11 +403,38 @@ export function ActivityPanel({ compact = false }: { compact?: boolean }) {
           <FilterSelects kind="activity" />
         </div>
       ) : null}
+      {activityFlow.totalCount > 0 ? (
+        <div className="live-preview-strip activity-preview-strip" data-motion={motionState} aria-label="Moving simulated Community and System Activity preview" aria-live="off">
+          <span className="live-preview-label"><i aria-hidden="true" /> {previewMetrics.activityEventsPerMinute}/min simulated</span>
+          {liveEvent ? <PlatformMark platform={liveEvent.platform} compact /> : <span className="live-preview-platform-placeholder" aria-hidden="true" />}
+          {liveEvent ? (
+            <span className="live-preview-copy" key={`${liveEvent.id}-${activityFlow.visibleCount}`}>
+              <strong>{liveEvent.lane === "community" ? "Community" : "System"}</strong>
+              <span>{liveEvent.title}</span>
+            </span>
+          ) : (
+            <span className="live-preview-copy live-preview-waiting">
+              <strong>{activityFlow.paused ? "Feed paused" : activityFlow.reducedMotion ? "Static fixture" : "Starting Activity…"}</strong>
+              <span>{activityFlow.reducedMotion ? "Full deterministic timeline shown below." : "The first simulated event is on its way."}</span>
+            </span>
+          )}
+          <Button
+            className="live-preview-toggle"
+            variant="ghost"
+            size="icon-sm"
+            onClick={toggleActivityFlow}
+            disabled={activityFlow.reducedMotion || activityFlow.totalCount < 2}
+            aria-label={activityFlow.paused ? "Resume simulated Activity movement" : "Pause simulated Activity movement"}
+          >
+            {activityFlow.paused ? <Play aria-hidden="true" /> : <Pause aria-hidden="true" />}
+          </Button>
+        </div>
+      ) : null}
       <div className="activity-list" aria-live="polite">
-        {events.length === 0 ? (
+        {activityFlow.visibleCount === 0 && !activityFlow.reducedMotion ? null : flowingEvents.length === 0 ? (
           <div className="small-empty-state"><Activity aria-hidden="true" /><strong>No activity matches</strong><p>Clear or change a filter to see the full timeline.</p></div>
         ) : (
-          events.map((event) => {
+          flowingEvents.map((event) => {
             const focused = state.focusedItem?.kind === "activity" && state.focusedItem.id === event.id;
             return (
               <article
@@ -344,6 +444,7 @@ export function ActivityPanel({ compact = false }: { compact?: boolean }) {
                 tabIndex={-1}
                 data-focused={focused}
                 data-level={event.attentionLevel}
+                data-preview-active={liveEvent?.id === event.id}
               >
                 <div className="activity-card-top">
                   <PlatformMark platform={event.platform} />
@@ -359,10 +460,9 @@ export function ActivityPanel({ compact = false }: { compact?: boolean }) {
                     className="linked-reports"
                     type="button"
                     onClick={() => {
-                      setFilters({ platform: "all", attention: "attention" });
                       const first = event.linkedSourceIds?.[0];
                       if (first) setFocusedItem({ kind: "chat", id: first });
-                      router.push("/app/chat");
+                      router.push(`/app/chat?linked=${encodeURIComponent(event.id)}`);
                     }}
                   >
                     <MessageSquareText aria-hidden="true" /> View {event.linkedSourceIds.length} linked viewer reports

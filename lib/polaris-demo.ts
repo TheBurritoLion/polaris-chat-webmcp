@@ -144,6 +144,7 @@ export const platformMeta: Record<
 export const previewMetrics = {
   combinedViewers: 148,
   messagesPerMinute: 32,
+  activityEventsPerMinute: 14,
   paceLabel: "Steady-to-busy",
   game: "ARC Raiders",
   location: "Buried City",

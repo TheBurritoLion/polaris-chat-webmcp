@@ -115,7 +115,8 @@ The grounded answer is **yes: the Bobcat Blueprint**. Four synthetic viewers acr
 - Tool inputs use narrow JSON Schemas, strict enums, bounded strings, and `additionalProperties: false`.
 - Queue mutations accept only stable source IDs already present in the deterministic fixture set.
 - State is stored only in browser `localStorage` and can be reset from the interface.
-- Interactive Chat starts blank, receives deterministic messages at the displayed cadence, and restarts from blank with Reset Demo. The WebMCP read tool sees only messages that have visibly arrived.
+- Interactive Chat and Activity start blank, receive deterministic items at their displayed cadences, and restart from blank with Reset Demo. WebMCP read tools see only items that have visibly arrived.
+- Activity cards with linked viewer reports open an exact source-context view in Chat with a clear return control; opening or closing that view does not restart either feed.
 - Preview movement uses deterministic local timers, pauses while the tab is hidden or when the viewer pauses it, and honors the operating system's reduced-motion preference.
 - No real Polaris provider implementation, credential, payload, private user data, or production runtime is included.
 

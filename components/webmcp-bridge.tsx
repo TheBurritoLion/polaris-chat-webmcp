@@ -83,6 +83,7 @@ export function WebMcpBridge() {
   const {
     getState,
     getVisibleChatMessages,
+    getVisibleActivityEvents,
     addQueueItem,
     updateQueueItem,
     setFocusedItem,
@@ -111,6 +112,7 @@ export function WebMcpBridge() {
         execute: async () => {
           const state = getState();
           const visibleChatMessages = getVisibleChatMessages();
+          const visibleActivityEvents = getVisibleActivityEvents();
           const queueCounts = state.queue.reduce(
             (counts, item) => ({ ...counts, [item.status]: counts[item.status] + 1 }),
             { new: 0, ready: 0, handled: 0, dismissed: 0 },
@@ -146,7 +148,13 @@ export function WebMcpBridge() {
               : visibleChatMessages.length < chatMessages.length
                 ? "receiving"
                 : "loaded",
-            activity_count: activityEvents.length,
+            activity_count: visibleActivityEvents.length,
+            scenario_activity_total: activityEvents.length,
+            activity_flow_state: visibleActivityEvents.length === 0
+              ? "starting"
+              : visibleActivityEvents.length < activityEvents.length
+                ? "receiving"
+                : "loaded",
             current_filters: state.filters,
             producer_queue: {
               total: state.queue.length,
@@ -268,7 +276,7 @@ export function WebMcpBridge() {
             ? input.activity_scope
             : "all";
           const maxCount = getMaxCount(input.max_count, 10, 20);
-          const events = [...activityEvents]
+          const events = [...getVisibleActivityEvents()]
             .sort((a, b) => b.order - a.order)
             .filter((event) => platform === "all" || event.platform === platform)
             .filter((event) => scope === "all" || event.lane === scope)
@@ -547,7 +555,7 @@ export function WebMcpBridge() {
       window.__polarisWebMcpToolCount = registered;
       window.dispatchEvent(new CustomEvent("polaris:webmcp-ready", { detail: { registered } }));
     })();
-  }, [addQueueItem, getState, getVisibleChatMessages, router, setFilters, setFocusedItem, updateQueueItem]);
+  }, [addQueueItem, getState, getVisibleActivityEvents, getVisibleChatMessages, router, setFilters, setFocusedItem, updateQueueItem]);
 
   return null;
 }

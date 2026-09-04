@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Activity,
   Focus,
@@ -53,6 +53,12 @@ const navigation = [
 
 function ResetDemoButton({ compact = false }: { compact?: boolean }) {
   const { resetDemo } = useDemoWorkspace();
+  const pathname = usePathname();
+  const router = useRouter();
+  const handleReset = () => {
+    resetDemo();
+    if (pathname === "/app/chat") router.replace("/app/chat");
+  };
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
@@ -70,12 +76,12 @@ function ResetDemoButton({ compact = false }: { compact?: boolean }) {
         <AlertDialogHeader>
           <AlertDialogTitle>Reset Producer Rush?</AlertDialogTitle>
           <AlertDialogDescription>
-            This clears the local Producer Queue, filters, and focused item. Simulated Chat restarts from blank and replays the same deterministic messages.
+            This clears the local Producer Queue, filters, focused item, and linked-report view. Simulated Chat and Activity restart from blank and replay the same deterministic timeline.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Keep current state</AlertDialogCancel>
-          <AlertDialogAction onClick={resetDemo}>Reset Demo</AlertDialogAction>
+          <AlertDialogAction onClick={handleReset}>Reset Demo</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
