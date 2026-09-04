@@ -89,7 +89,7 @@ export default function HomePage() {
         <div>
           <p className="eyebrow">Ready when Chat gets loud</p>
           <h2 id="demo-heading">Run the Producer Rush scenario.</h2>
-          <p>Review a busy five-platform moment, build the queue with ChatGPT, then handle the urgent item yourself.</p>
+          <p>Review a busy five-platform moment, build the queue with ChatGPT, or ask: “Did I miss any Blueprints in today’s stream?”</p>
         </div>
         <Link className="button button-primary" href="/app/chat">Open the workspace <ArrowRight size={17} /></Link>
       </section>

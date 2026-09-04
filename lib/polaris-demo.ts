@@ -19,6 +19,7 @@ export type ChatClassification =
   | "ordinary"
   | "viewer_question"
   | "technical_report"
+  | "gameplay_signal"
   | "celebration"
   | "untrusted_instruction_attempt";
 
@@ -43,6 +44,7 @@ export type ActivityType =
   | "gifted_memberships"
   | "raid"
   | "follow_burst"
+  | "game_moment"
   | "stream_state"
   | "connection_state"
   | "system_notice";
@@ -138,6 +140,14 @@ export const platformMeta: Record<
     soft: "rgba(105, 174, 252, .12)",
   },
 };
+
+export const previewMetrics = {
+  combinedViewers: 148,
+  messagesPerMinute: 32,
+  paceLabel: "Steady-to-busy",
+  game: "ARC Raiders",
+  location: "Buried City",
+} as const;
 
 export const chatMessages: ChatMessage[] = [
   {
@@ -302,6 +312,118 @@ export const chatMessages: ChatMessage[] = [
     order: 114,
     classification: "celebration",
   },
+  {
+    id: "chat-twitch-arc-hold-03",
+    kind: "chat",
+    platform: "twitch",
+    author: "scrap_sprinter",
+    initials: "SS",
+    text: "That Hullcracker fight had the whole chat holding its breath.",
+    timestamp: "12:08:29 PM",
+    order: 115,
+    badge: "Subscriber",
+    classification: "ordinary",
+  },
+  {
+    id: "chat-youtube-bobcat-callout-01",
+    kind: "chat",
+    platform: "youtube",
+    author: "ArcAtlas",
+    initials: "AA",
+    text: "Bobcat Blueprint on the yellow workbench — left side!",
+    timestamp: "12:08:34 PM",
+    order: 116,
+    badge: "Member",
+    classification: "gameplay_signal",
+  },
+  {
+    id: "chat-kick-bobcat-missed-02",
+    kind: "chat",
+    platform: "kick",
+    author: "buriedcity_mock",
+    initials: "BM",
+    text: "Nooo, you walked straight past the Bobcat Blueprint before extracting 😭",
+    timestamp: "12:08:39 PM",
+    order: 117,
+    classification: "gameplay_signal",
+  },
+  {
+    id: "chat-tiktok-bobcat-confirm-03",
+    kind: "chat",
+    platform: "tiktok-live",
+    author: "raider_rue_preview",
+    initials: "RR",
+    text: "Chat saw it too — Bobcat Blueprint was on the bench in that last room.",
+    timestamp: "12:08:43 PM",
+    order: 118,
+    classification: "gameplay_signal",
+  },
+  {
+    id: "chat-x-game-lag-03",
+    kind: "chat",
+    platform: "x-live",
+    author: "rustline_preview",
+    initials: "RP",
+    text: "oh no your game is lagging right when the ARC jumped you",
+    timestamp: "12:08:48 PM",
+    order: 119,
+    classification: "gameplay_signal",
+  },
+  {
+    id: "chat-twitch-stream-smooth-04",
+    kind: "chat",
+    platform: "twitch",
+    author: "nova_scamp",
+    initials: "NS",
+    text: "Tiny in-game hitch there; stream playback is smooth on my end.",
+    timestamp: "12:08:52 PM",
+    order: 120,
+    classification: "gameplay_signal",
+  },
+  {
+    id: "chat-youtube-anvil-04",
+    kind: "chat",
+    platform: "youtube",
+    author: "ExtractEcho",
+    initials: "EE",
+    text: "The Anvil reload into that peek was CLEAN.",
+    timestamp: "12:08:57 PM",
+    order: 121,
+    classification: "ordinary",
+  },
+  {
+    id: "chat-kick-extract-streak-04",
+    kind: "chat",
+    platform: "kick",
+    author: "loot_lantern",
+    initials: "LL",
+    text: "Three successful extracts in a row, we’re cooking.",
+    timestamp: "12:09:02 PM",
+    order: 122,
+    classification: "celebration",
+  },
+  {
+    id: "chat-tiktok-partner-energy-04",
+    kind: "chat",
+    platform: "tiktok-live",
+    author: "bluejay_demo",
+    initials: "BD",
+    text: "Partner-push energy tonight — chat is flying ✦",
+    timestamp: "12:09:07 PM",
+    order: 123,
+    classification: "celebration",
+  },
+  {
+    id: "chat-twitch-blueprint-echo-05",
+    kind: "chat",
+    platform: "twitch",
+    author: "quietquasar",
+    initials: "QQ",
+    text: "Did anyone else see that Bobcat Blueprint on the way out?",
+    timestamp: "12:09:12 PM",
+    order: 124,
+    classification: "gameplay_signal",
+  },
 ];
 
 export const activityEvents: ActivityEvent[] = [
@@ -398,6 +520,61 @@ export const activityEvents: ActivityEvent[] = [
     order: 207,
     attentionLevel: "info",
   },
+  {
+    id: "activity-arc-session",
+    kind: "activity",
+    platform: "polaris",
+    lane: "system",
+    type: "stream_state",
+    title: "ARC Raiders run: Buried City",
+    detail: "Producer Rush is simulating 148 combined viewers and a 32-message-per-minute room across five preview channels.",
+    timestamp: "12:08:36 PM",
+    order: 208,
+    attentionLevel: "info",
+  },
+  {
+    id: "activity-extraction-streak",
+    kind: "activity",
+    platform: "twitch",
+    lane: "community",
+    type: "game_moment",
+    title: "Three-extract streak",
+    detail: "Synthetic Chat is celebrating three successful ARC Raiders extractions in a row.",
+    timestamp: "12:09:03 PM",
+    order: 209,
+    attentionLevel: "normal",
+  },
+  {
+    id: "activity-game-lag-mention",
+    kind: "activity",
+    platform: "polaris",
+    lane: "system",
+    type: "system_notice",
+    title: "Brief gameplay hitch mentioned",
+    detail: "One viewer mentioned in-game lag; another reported that stream playback remained smooth.",
+    timestamp: "12:09:09 PM",
+    order: 210,
+    attentionLevel: "info",
+    linkedSourceIds: ["chat-x-game-lag-03", "chat-twitch-stream-smooth-04"],
+  },
+  {
+    id: "activity-bobcat-blueprint-cluster",
+    kind: "activity",
+    platform: "polaris",
+    lane: "community",
+    type: "game_moment",
+    title: "Bobcat Blueprint callouts clustered",
+    detail: "Four synthetic viewers say the Bobcat Blueprint was left on the yellow workbench before extraction.",
+    timestamp: "12:09:15 PM",
+    order: 211,
+    attentionLevel: "info",
+    linkedSourceIds: [
+      "chat-youtube-bobcat-callout-01",
+      "chat-kick-bobcat-missed-02",
+      "chat-tiktok-bobcat-confirm-03",
+      "chat-twitch-blueprint-echo-05",
+    ],
+  },
 ];
 
 export const defaultWorkspaceState: DemoWorkspaceState = {
@@ -444,4 +621,3 @@ export function isQueueStatus(value: unknown): value is QueueStatus {
 export function priorityRank(priority: Priority) {
   return priority === "urgent" ? 0 : priority === "high" ? 1 : 2;
 }
-

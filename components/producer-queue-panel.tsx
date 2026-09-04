@@ -44,6 +44,8 @@ import {
 const heroPrompt =
   "I’m live and Chat is moving too fast. Review the recent messages and community activity. Add the three things I should handle next to the Producer Queue. Prioritize technical problems and unanswered viewer questions above celebrations. Focus the workspace on the most urgent item. Do not send messages, reply, moderate anyone, or open an external service.";
 
+const streamRecallPrompt = "Did I miss any Blueprints in today’s stream?";
+
 function QueueItemCard({ item }: { item: QueueItem }) {
   const { state, updateQueueItem, setFocusedItem } = useDemoWorkspace();
   const router = useRouter();
@@ -244,4 +246,4 @@ export function ProducerQueuePanel({ compact = false }: { compact?: boolean }) {
   );
 }
 
-export { heroPrompt };
+export { heroPrompt, streamRecallPrompt };

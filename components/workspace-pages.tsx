@@ -16,7 +16,7 @@ import {
   WifiOff,
 } from "lucide-react";
 import { ActivityPanel, ChatPanel } from "@/components/feed-panels";
-import { ProducerQueuePanel, heroPrompt } from "@/components/producer-queue-panel";
+import { ProducerQueuePanel, heroPrompt, streamRecallPrompt } from "@/components/producer-queue-panel";
 import { PlatformMark } from "@/components/polaris-brand";
 import { ResetDemoButton } from "@/components/workspace-shell";
 import { useDemoWorkspace } from "@/components/demo-workspace-provider";
@@ -69,6 +69,11 @@ export function QueueWorkspacePage() {
         <details className="guide-prompt">
           <summary>Show the challenge prompt</summary>
           <p>{heroPrompt}</p>
+        </details>
+        <details className="guide-prompt guide-recall">
+          <summary>Try stream recall</summary>
+          <p>{streamRecallPrompt}</p>
+          <span>The synthetic feed contains four cross-platform Bobcat Blueprint callouts.</span>
         </details>
       </aside>
     </div>

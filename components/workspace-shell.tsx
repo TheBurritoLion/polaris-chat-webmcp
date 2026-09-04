@@ -31,6 +31,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { previewMetrics } from "@/lib/polaris-demo";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -156,7 +157,11 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
           <div className="workspace-header-actions">
-            <span className="simulated-live"><i aria-hidden="true" /> Simulated live</span>
+            <span className="simulated-live">
+              <i aria-hidden="true" />
+              <span className="live-scale-full">{previewMetrics.combinedViewers} simulated · {previewMetrics.messagesPerMinute} msg/min</span>
+              <span className="live-scale-compact">{previewMetrics.messagesPerMinute}/min</span>
+            </span>
             <span className="webmcp-ready"><Sparkles aria-hidden="true" /> Producer ready</span>
             <ResetDemoButton compact />
           </div>
@@ -186,4 +191,3 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
 }
 
 export { ResetDemoButton };
-

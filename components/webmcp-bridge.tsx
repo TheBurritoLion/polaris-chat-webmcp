@@ -11,6 +11,7 @@ import {
   isQueueStatus,
   platformKeys,
   platformMeta,
+  previewMetrics,
   priorityRank,
   type AttentionFilter,
   type PlatformKey,
@@ -120,6 +121,15 @@ export function WebMcpBridge() {
               id: "producer-rush",
               name: "Producer Rush",
               state: "loaded",
+              stream_context: {
+                game: previewMetrics.game,
+                location: previewMetrics.location,
+              },
+            },
+            simulated_room: {
+              combined_viewers: previewMetrics.combinedViewers,
+              chat_messages_per_minute: previewMetrics.messagesPerMinute,
+              pace: previewMetrics.paceLabel,
             },
             active_platforms: platformKeys.map((platform) => ({
               id: platform,
@@ -159,7 +169,7 @@ export function WebMcpBridge() {
               type: "integer",
               minimum: 1,
               maximum: 25,
-              default: 14,
+              default: 25,
               description: "Maximum number of recent synthetic messages to return.",
             },
             attention: {
@@ -176,7 +186,7 @@ export function WebMcpBridge() {
           const input = asRecord(rawInput);
           const platform = isPlatformFilter(input.platform) ? input.platform : "all";
           const attention = input.attention === "attention" ? "attention" : "all";
-          const maxCount = getMaxCount(input.max_count, 14);
+          const maxCount = getMaxCount(input.max_count, 25);
           const messages = [...chatMessages]
             .sort((a, b) => b.order - a.order)
             .filter((message) => platform === "all" || message.platform === platform)
@@ -196,6 +206,14 @@ export function WebMcpBridge() {
               timestamp: message.timestamp,
               order: message.order,
               classification: message.classification,
+              attention_role:
+                message.classification === "technical_report" || message.classification === "viewer_question"
+                  ? "actionable_attention"
+                  : message.classification === "gameplay_signal"
+                    ? "stream_recall_context"
+                    : message.classification === "celebration"
+                      ? "community_moment"
+                      : "conversation_context",
               queued: getState().queue.some((item) => item.sourceId === message.id),
             }));
           return {
@@ -525,4 +543,3 @@ export function WebMcpBridge() {
 
   return null;
 }
-

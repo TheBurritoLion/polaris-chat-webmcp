@@ -5,6 +5,7 @@ import { BrandMark, PlatformMark } from "@/components/polaris-brand";
 import { usePreviewMotion } from "@/hooks/use-preview-motion";
 import {
   chatMessages,
+  previewMetrics,
   type ChatMessage,
   type Priority,
 } from "@/lib/polaris-demo";
@@ -13,6 +14,15 @@ const homeMessageIds = [
   "chat-youtube-route-01",
   "chat-tiktok-celebrate-01",
   "chat-x-laugh-02",
+  "chat-twitch-arc-hold-03",
+  "chat-youtube-bobcat-callout-01",
+  "chat-kick-bobcat-missed-02",
+  "chat-tiktok-bobcat-confirm-03",
+  "chat-x-game-lag-03",
+  "chat-twitch-stream-smooth-04",
+  "chat-youtube-anvil-04",
+  "chat-tiktok-partner-energy-04",
+  "chat-twitch-blueprint-echo-05",
   "chat-twitch-setup-question",
   "chat-youtube-audio-01",
   "chat-kick-audio-02",
@@ -32,6 +42,46 @@ interface PreviewSignal {
 }
 
 function getPreviewSignal(message: ChatMessage): PreviewSignal {
+  if (message.id === "chat-youtube-bobcat-callout-01") {
+    return {
+      priority: "normal",
+      title: "Loot callout detected",
+      detail: "Chat spots a Bobcat Blueprint on the yellow workbench.",
+      meta: "ARC Raiders · 1 callout",
+    };
+  }
+  if (message.id === "chat-kick-bobcat-missed-02") {
+    return {
+      priority: "high",
+      title: "Blueprint miss forming",
+      detail: "A second platform says the Bobcat Blueprint was left behind.",
+      meta: "2 matching callouts",
+    };
+  }
+  if (message.id === "chat-tiktok-bobcat-confirm-03" || message.id === "chat-twitch-blueprint-echo-05") {
+    return {
+      priority: "normal",
+      title: "Bobcat Blueprint missed",
+      detail: "Cross-platform Chat confirms the blueprint was left before extraction.",
+      meta: "4 linked callouts · Recall ready",
+    };
+  }
+  if (message.id === "chat-x-game-lag-03") {
+    return {
+      priority: "normal",
+      title: "Gameplay hitch mentioned",
+      detail: "One viewer flags in-game lag during an ARC encounter.",
+      meta: "Isolated gameplay report",
+    };
+  }
+  if (message.id === "chat-twitch-stream-smooth-04") {
+    return {
+      priority: "normal",
+      title: "Stream signal cross-checked",
+      detail: "A second viewer says playback stayed smooth during the game hitch.",
+      meta: "Context preserved",
+    };
+  }
   if (message.id === "chat-twitch-setup-question") {
     return {
       priority: "high",
@@ -81,8 +131,8 @@ function getPreviewSignal(message: ChatMessage): PreviewSignal {
 }
 
 export function HomeLivePreview() {
-  const motion = usePreviewMotion({ itemCount: homeMessages.length, intervalMs: 2800 });
-  const visibleMessages = Array.from({ length: 4 }, (_, offset) => (
+  const motion = usePreviewMotion({ itemCount: homeMessages.length, intervalMs: 1850 });
+  const visibleMessages = Array.from({ length: 5 }, (_, offset) => (
     homeMessages[(motion.index + offset) % homeMessages.length]
   ));
   const newestMessage = visibleMessages[visibleMessages.length - 1];
@@ -94,7 +144,7 @@ export function HomeLivePreview() {
       <div className="mini-app-bar">
         <div><BrandMark size={25} /><strong>Producer Rush</strong></div>
         <div className="mini-live-controls" data-motion={motionState}>
-          <span><i aria-hidden="true" /> {motion.reducedMotion ? "Motion reduced" : motion.paused ? "Preview paused" : "Preview moving"}</span>
+          <span><i aria-hidden="true" /> {motion.reducedMotion ? "Motion reduced" : motion.paused ? "Preview paused" : `${previewMetrics.messagesPerMinute} msg/min · Preview moving`}</span>
           <button
             type="button"
             onClick={motion.togglePaused}
@@ -107,7 +157,7 @@ export function HomeLivePreview() {
       </div>
       <div className="mini-workspace">
         <section aria-labelledby="mini-chat-title">
-          <div className="mini-panel-heading"><span id="mini-chat-title"><MessageSquareText size={14} /> Chat</span><small>Simulated flow</small></div>
+          <div className="mini-panel-heading"><span id="mini-chat-title"><MessageSquareText size={14} /> Chat</span><small>{chatMessages.length} synthetic · ARC Raiders</small></div>
           <div className="mini-message-list" aria-live="off">
             {visibleMessages.map((message, index) => (
               <article

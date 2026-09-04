@@ -8,6 +8,7 @@ import {
   Check,
   CircleHelp,
   Focus,
+  Gamepad2,
   MessageSquareText,
   Pause,
   Play,
@@ -32,6 +33,7 @@ import {
   chatMessages,
   platformKeys,
   platformMeta,
+  previewMetrics,
   type ActivityEvent,
   type AttentionFilter,
   type ChatMessage,
@@ -80,6 +82,9 @@ function sourceReason(source: ChatMessage | ActivityEvent) {
   }
   if (source.kind === "chat" && source.classification === "technical_report") {
     return "Viewer reports a live technical problem that could affect the audience.";
+  }
+  if (source.kind === "chat" && source.classification === "gameplay_signal") {
+    return "ARC Raiders gameplay context that the creator may want to recall after the moment passes.";
   }
   if (source.kind === "activity") return "Notable community or system moment worth creator review.";
   return "Creator may want to review this live moment.";
@@ -176,7 +181,7 @@ export function ChatPanel({ full = false }: { full?: boolean }) {
   );
   const motion = usePreviewMotion({
     itemCount: messages.length,
-    intervalMs: 3000,
+    intervalMs: 2400,
     initialIndex: Math.min(4, Math.max(0, messages.length - 1)),
   });
   const liveMessage = messages[motion.index];
@@ -194,7 +199,7 @@ export function ChatPanel({ full = false }: { full?: boolean }) {
       <div className="panel-filters"><FilterSelects kind="chat" /></div>
       {liveMessage ? (
         <div className="live-preview-strip" data-motion={motionState} aria-label="Moving simulated livestream preview" aria-live="off">
-          <span className="live-preview-label"><i aria-hidden="true" /> Simulated flow</span>
+          <span className="live-preview-label"><i aria-hidden="true" /> {previewMetrics.messagesPerMinute}/min simulated</span>
           <PlatformMark platform={liveMessage.platform} compact />
           <span className="live-preview-copy" key={`${liveMessage.id}-${motion.index}`}>
             <strong>{liveMessage.author}</strong>
@@ -244,6 +249,8 @@ export function ChatPanel({ full = false }: { full?: boolean }) {
                     <Badge className="attention-label technical" variant="outline"><AlertTriangle /> Viewer reports audio issue</Badge>
                   ) : message.classification === "viewer_question" ? (
                     <Badge className="attention-label question" variant="outline"><CircleHelp /> Unanswered question</Badge>
+                  ) : message.classification === "gameplay_signal" ? (
+                    <Badge className="attention-label gameplay" variant="outline"><Gamepad2 /> ARC Raiders signal</Badge>
                   ) : message.classification === "untrusted_instruction_attempt" ? (
                     <Badge className="attention-label untrusted" variant="outline"><ShieldAlert /> Viewer text · inert data</Badge>
                   ) : null}
@@ -270,7 +277,7 @@ export function ActivityPanel({ compact = false }: { compact?: boolean }) {
         .filter((event) =>
           attentionMatches(event.id, eventNeedsAttention(event), state.filters.attention, state.queue),
         )
-        .slice(0, compact ? 5 : undefined),
+        .slice(0, compact ? 8 : undefined),
     [compact, state.filters.activityScope, state.filters.attention, state.filters.platform, state.queue],
   );
 

@@ -441,8 +441,8 @@ summary,
 .mini-panel-heading small { color: var(--text-muted); font-size: 9px; }
 .mini-message-list { padding: 4px 9px; }
 .mini-message-list article {
-  min-height: 78px;
-  padding: 10px 3px;
+  min-height: 68px;
+  padding: 8px 3px;
   display: grid;
   grid-template-columns: 25px minmax(0, 1fr);
   gap: 9px;
@@ -673,6 +673,7 @@ summary,
   font-size: 11px;
   font-weight: 650;
 }
+.live-scale-compact { display: none; }
 .webmcp-ready { color: #c7c0ff; border-color: rgb(145 124 245 / 18%); background: rgb(145 124 245 / 5%); }
 .webmcp-ready svg { width: 13px; height: 13px; }
 .reset-button { color: var(--text-secondary); }
@@ -804,6 +805,7 @@ summary,
 .reply-context { margin: 7px 0 0; padding: 5px 7px; border-left: 2px solid #344963; color: var(--text-muted); background: rgb(255 255 255 / 2%); font-size: 10px; }
 .attention-label { margin-top: 8px; min-height: 21px; border-color: rgb(105 174 252 / 18%); color: var(--blue-bright); background: rgb(105 174 252 / 5%); font-size: 9px; text-transform: none; }
 .attention-label.technical { border-color: rgb(241 141 144 / 22%); color: #ffb4b7; background: rgb(241 141 144 / 6%); }
+.attention-label.gameplay { border-color: rgb(123 216 189 / 20%); color: #9be1cb; background: rgb(123 216 189 / 5%); }
 .attention-label.untrusted { border-color: rgb(137 151 170 / 18%); color: #9eacbe; background: rgb(137 151 170 / 5%); }
 .source-queue-button { min-width: 68px; color: #8f9db0; font-size: 10px; }
 .source-queue-button:hover { color: var(--text); background: var(--surface-soft); }
@@ -963,8 +965,11 @@ summary,
 .producer-guide li p { margin: 1px 0 0; color: var(--text-muted); font-size: 11px; line-height: 1.45; }
 .producer-guide li strong { display: block; color: var(--text-secondary); font-size: 12px; }
 .guide-prompt { margin-top: 22px; padding: 12px; border: 1px solid var(--border-soft); border-radius: 10px; background: rgb(255 255 255 / 2%); }
+.guide-prompt + .guide-prompt { margin-top: 8px; }
 .guide-prompt summary { color: #b8c5d6; font-size: 11px; font-weight: 680; }
 .guide-prompt p { margin: 10px 0 0; color: var(--text-muted); font-size: 10px; line-height: 1.55; }
+.guide-prompt > span { display: block; margin-top: 7px; color: #7f8da0; font-size: 9px; line-height: 1.45; }
+.guide-recall { border-color: rgb(123 216 189 / 15%); background: rgb(123 216 189 / 3%); }
 
 /* Routes */
 .route-header {
@@ -1170,6 +1175,8 @@ summary,
   .workspace-header-primary strong { max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
   .webmcp-ready { display: none; }
   .simulated-live { min-height: 29px; padding-inline: 8px; font-size: 10px; }
+  .live-scale-full { display: none; }
+  .live-scale-compact { display: inline; }
   .workspace-disclosure { min-height: 52px; padding: 7px 11px; align-items: flex-start; flex-direction: column; gap: 1px; line-height: 1.35; }
   .workspace-content { height: calc(100dvh - 114px); padding: 8px 8px 80px; overflow-y: auto; }
   .workspace-grid,

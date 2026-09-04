@@ -10,7 +10,7 @@ The challenge edition does not connect to creator accounts or provider APIs. Eve
 
 Polaris Chat existed as a private product concept and development project before the OpenAI WebMCP Challenge. Its pre-existing foundations include the **Polaris Chat** name, **Every community. One North Star.** tagline, luminous North Star identity, premium dark navy creator-workspace direction, five-platform product vision, and the core Chat, Activity, Platform Hub, and Settings navigation concepts.
 
-This public repository contains the separately authored challenge edition. Challenge-specific work includes the deterministic **Producer Rush** scenario, synthetic five-platform fixtures, a pauseable motion preview, the shared **Producer Queue**, all eight browser-registered WebMCP tools, local persistence and Reset Demo, the public-preview disclosure and landing experience, and the explicit untrusted-content and human-control boundaries.
+This public repository contains the separately authored challenge edition. Challenge-specific work includes the deterministic **Producer Rush** scenario, a steady-to-busy near-Partner preview pace, synthetic five-platform fixtures, ARC Raiders stream-recall signals, a pauseable motion preview, the shared **Producer Queue**, all eight browser-registered WebMCP tools, local persistence and Reset Demo, the public-preview disclosure and landing experience, and the explicit untrusted-content and human-control boundaries.
 
 The private production repository, its Git history, runtime configuration, credentials, provider implementations, and real data are not included here. This repository is an isolated public challenge implementation, not a publication or fork of the private production codebase.
 
@@ -101,6 +101,12 @@ Mark the urgent item **Handled**, then ask:
 > What still needs my attention? Reprioritize the remaining queue.
 
 The handled item remains visible as evidence that the human and agent share persistent state.
+
+The same deterministic scenario also supports stream recall. Ask:
+
+> Did I miss any Blueprints in today’s stream?
+
+The grounded answer is **yes: the Bobcat Blueprint**. Four synthetic viewers across Twitch, YouTube, Kick, and TikTok LIVE call out the yellow-workbench pickup and confirm that it was left behind before extraction. A separate isolated “game is lagging” comment is paired with a viewer who says stream playback remained smooth, preserving the distinction between a gameplay hitch and the higher-priority cross-platform microphone problem.
 
 ## Safety boundary
 
